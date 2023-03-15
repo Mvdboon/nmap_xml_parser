@@ -11,6 +11,7 @@ pub enum Address {
     MacAddr(MacAddr),
 }
 
+#[derive(Clone, Debug, PartialEq)]
 pub struct MacAddr {
     pub addr: String,
     pub vendor: Option<String>,
