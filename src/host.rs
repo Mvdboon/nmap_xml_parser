@@ -8,7 +8,12 @@ use strum_macros::{Display, EnumString};
 #[derive(Display, Clone, Debug, PartialEq)]
 pub enum Address {
     IpAddr(IpAddr),
-    MacAddr(String),
+    MacAddr(MacAddr),
+}
+
+pub struct MacAddr {
+    pub addr: String,
+    pub vendor: Option<String>,
 }
 
 #[derive(Clone, Debug)]
@@ -99,14 +104,20 @@ fn parse_address_node(node: Node) -> Result<Address, Error> {
         .attribute("addr")
         .ok_or_else(|| Error::from("expected `addr` attribute in `address` node"))?;
 
+    let vendor = node.attribute("vendor");
+
     match addrtype {
-        "mac" => Ok(Address::MacAddr(addr.to_string())),
-        _ => {
+        "ipv4" => {
             let a = addr
                 .parse::<IpAddr>()
                 .map_err(|_| Error::from("failed to parse IP address"))?;
             Ok(Address::IpAddr(a))
         }
+        "mac" => Ok(Address::MacAddr(MacAddr {
+            addr: addr.to_string(),
+            vendor: vendor.map(|s| s.to_string()),
+        })),
+        _ => Err(Error::from("unknown address type")),
     }
 }
 
